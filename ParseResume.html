@@ -1,0 +1,109 @@
+<html>
+   <head>
+      <meta charset="utf8">
+      <title></title>
+      <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+      <script type="text/javascript">
+         function readURL() {
+             $('.loader').show();
+             var files = document.getElementById('resumeFile').files;
+             if (files.length > 0) 
+         {
+                 parseResume(files[0]);
+             }
+         
+         }
+         
+         function parseResume(file) {
+             var base64data = "";
+             var reader = new FileReader();
+             reader.readAsDataURL(file);
+             reader.onload = function() {
+                 var text = reader.result;
+                 text = text.substring(text.indexOf("base64,") + 7, text.length);
+                 base64data = text;
+                 callAPI(base64data, file.name)
+         
+             };
+             reader.onerror = function(error) {
+                 console.log('Error: ', error);
+             };
+             return base64data;
+         }
+         
+         function callAPI(data, fileName) {
+         
+         var start = new Date().getTime();
+         var APIURL="https://rest.rchilli.com/RChilliParser/Rchilli/parseResumeBinary";
+         var APIKey="User Key";
+         
+             config = {
+                 filedata: data,
+                 filename: fileName,
+                 userkey: APIKey,
+                 version: "8.0.0",
+                 subuserid: "As Per Agreement"
+             }
+         
+         
+         try{
+             $.ajax({
+                 method: "POST",
+                 url: APIURL,
+                 data: JSON.stringify(config),
+                 contentType: "application/json",
+                 dataType: "json",
+                 cache: false,
+                 success: function(html) {
+                     $('.loader').hide();
+                     
+                     document.getElementById('outputDiv').value = JSON.stringify(html, undefined, 4);;                   
+                 },
+         error:function(xhr, status, error) {
+         $('.loader').hide();
+         console.log(error);
+         console.log(xhr.responseText);
+         }
+             });
+         }catch(err){ console.log(err);}
+         }
+      </script>
+      <style>
+         #overlay {
+         width: 80%;
+         margin-left: 10%;
+         }
+         .loader {
+         width: 100px;
+         height: 100px;
+         z-index: 100;
+         position: absolute;
+         left: 35%;
+         top: 10%;
+         }
+         .textBox
+         {
+         width: 500px;
+         height:30px;
+         border:1px gray solid;
+         }
+      </style>
+   </head>
+   <body>
+      <div id="overlay">
+         <h1>File Upload</h1>
+         <table>
+            <tr>
+               <td> <input id="resumeFile" type="file" /> </td>               
+            </tr>
+            <tr>
+               <td> <input id="btn" type="button" value="Parse" Style="width:100px;height:40px;" onclick="readURL();" /> </td>               
+            </tr>
+         </table>
+         <h3> Output : </h3>
+         <textarea id="outputDiv" Style="font-family:Verdana;font-size:18px;border:2px solid gray;" rows="25" cols="100">
+		 </textarea> 
+		<img src="loader.gif" class="loader" Style="display:none;" id="loader" alt="Loading" />		 
+      </div>
+   </body>
+</html>
